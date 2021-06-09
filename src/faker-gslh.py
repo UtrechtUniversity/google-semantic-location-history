@@ -11,25 +11,65 @@ from faker_schema.faker_schema import FakerSchema
 YEARS = [2020]
 MONTHS = ["JANUARY"]
 
+# schema with types
+SCHEMA_TYPES = {
+    'latitudeE7': 'latitude', 
+    'longitudeE7': 'longitude',
+    'startTimestampMs': 'random_digit_not_null', 
+    'endTimestampMs': 'random_digit_not_null', 
+    'distance': 'random_digit_not_null', 
+    'activityType': 'random_digit_not_null', 
+    'confidence': 'random_digit_not_null', 
+    'activityType': 'random_digit_not_null', 
+    'probability': 'random_digit_not_null',
+    'latE7': 'latitude',
+    'lngE7': 'longitude',
+    'timestampMs': 'random_digit_not_null', 
+    'accuracyMeters': 'random_digit_not_null',
+    'placeId': 'random_digit_not_null', 
+    'name': 'random_digit_not_null', 
+    'hexRgbColor': 'random_digit_not_null',
+    'address': 'address', 
+    'name': 'name',
+    'deviceTag': 'random_digit_not_null',
+    'locationConfidence': 'random_digit_not_null', 
+    'semanticType': 'random_digit_not_null', 
+    'startTimestampMs': 'random_digit_not_null', 
+    'endTimestampMs': 'random_digit_not_null', 
+    'placeConfidence': 'random_digit_not_null', 
+    'centerLatE7': 'latitude', 
+    'centerLngE7': 'longitude', 
+    'visitConfidence': 'random_digit_not_null', 
+    'editConfirmationStatus': 'random_digit_not_null',
+    'deviceTag': 'random_digit_not_null', 
+    'placeConfidence': 'random_digit_not_null', 
+    'centerLatE7': 'latitude', 
+    'centerLngE7': 'longitude', 
+    'visitConfidence': 'random_digit_not_null', 
+    'accuracyMeters': 'random_digit_not_null'
+}
 
-def get_faker_schema(json_schema, iterations=1):
+
+def get_faker_schema(json_schema, custom=None, iterations=1):
     if "type" not in json_schema:
         key = next(iter(json_schema))
-        value = get_faker_schema(json_schema[key])
-        print(key)
+        if isinstance(custom, dict) and key in custom:
+            value = custom[key]
+        else:
+            value = get_faker_schema(json_schema[key], custom=custom)
         return {key: value}
     elif json_schema['type'] == "object":
         value = {}
         for prop, val in json_schema["properties"].items():
-            value.update(get_faker_schema({prop: val}))
+            value.update(get_faker_schema({prop: val}, custom=custom))
     elif json_schema['type'] == "array":
-        value = [get_faker_schema(json_schema['items']) for i in range(iterations)]
+        value = [get_faker_schema(json_schema['items'], custom=custom) for i in range(iterations)]
     elif json_schema['type'] == "string":
-        value = "address"
+        value = "pystr_format"
     elif json_schema['type'] == "number":
-        value = "address"
+        value = "pyfloat"
     elif json_schema['type'] == "integer":
-        value = "local_latlng(country_code=NL)"
+        value = "pyint" #"local_latlng(country_code=NL)"
     return value
 
 
@@ -56,7 +96,8 @@ def process(file_data):
                         break
 
     json_schema = builder.to_schema()
-    schema = get_faker_schema(json_schema["properties"])
+    print(json_schema)
+    schema = get_faker_schema(json_schema["properties"], custom=SCHEMA_TYPES)
     fake = Faker('nl_NL')
     fake.add_provider(geo)
     faker = FakerSchema(faker=fake, locale='nl_NL')
