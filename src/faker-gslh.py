@@ -9,6 +9,7 @@ from genson import SchemaBuilder
 from faker import Faker
 from faker.providers import geo
 from faker_schema.faker_schema import FakerSchema
+from geopy.distance import geodesic
 
 YEARS = [2020]
 MONTHS = ["JANUARY"]
@@ -62,8 +63,8 @@ def create_places(total=1):
         place = {
             "name": fake.unique.company(),
             "address": fake.unique.address(), 
-            "latitude": float(latlon[0])*1e7,
-            "longitude": float(latlon[1])*1e7
+            "latitude": float(latitude),
+            "longitude": float(longitude)
         }
         places.update({fake.unique.pystr_format(): place})
     return places
@@ -90,18 +91,20 @@ def update_data(data, start_date):
             data_unit["placeVisit"]["location"]["address"] = places[start_location]["address"]
             data_unit["placeVisit"]["location"]["placeId"] = start_location   
             data_unit["placeVisit"]["location"]["name"] = places[start_location]["name"]    
-            data_unit["placeVisit"]["location"]["latitudeE7"] = places[start_location]["latitude"]
-            data_unit["placeVisit"]["location"]["longitudeE7"] = places[start_location]["longitude"]        
+            data_unit["placeVisit"]["location"]["latitudeE7"] = places[start_location]["latitude"]*1e7
+            data_unit["placeVisit"]["location"]["longitudeE7"] = places[start_location]["longitude"]*1e7      
 
         if "activitySegment" in data_unit.keys():
             data_unit["activitySegment"]["duration"]["startTimestampMs"] = start_time
             data_unit["activitySegment"]["duration"]["endTimestampMs"] = end_time
-            data_unit["activitySegment"]['startLocation']['latitudeE7'] = places[start_location]["latitude"]
-            data_unit["activitySegment"]['startLocation']['longitudeE7'] = places[start_location]["longitude"]           
+            data_unit["activitySegment"]['startLocation']['latitudeE7'] = places[start_location]["latitude"]*1e7
+            data_unit["activitySegment"]['startLocation']['longitudeE7'] = places[start_location]["longitude"]*1e7           
             data_unit["activitySegment"]['endLocation']['latitudeE7'] = places[end_location]["latitude"]
             data_unit["activitySegment"]['endLocation']['longitudeE7'] = places[end_location]["latitude"]
             data_unit["activitySegment"]["duration"]["activityType"] = fake.random_element(elements=ACTIVITIES)
-            # data_unit["activitySegment"]["distance"] = 
+            start = (places[start_location]["latitude"], places[start_location]["longitude"])
+            end = (places[end_location]["latitude"], places[end_location]["longitude"])
+            data_unit["activitySegment"]["distance"] = geodesic(start, end).m
 
         start_time = end_time
         start_location = end_location
