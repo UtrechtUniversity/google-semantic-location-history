@@ -5,6 +5,7 @@ import zipfile
 from datetime import datetime
 from collections import OrderedDict
 
+from zipfile import ZipFile
 from genson import SchemaBuilder
 from faker import Faker
 from faker.providers import geo
@@ -13,8 +14,10 @@ from geopy.distance import geodesic
 
 YEARS = [2020]
 MONTHS = ["JANUARY"]
+NDAYS = 31
 NPLACES = 50
-TOP_PLACES = [0.4, 0.4, 0.1]
+NACTIVITIES = 500
+TOP_PLACES = [0.4, 0.3, 0.05]
 ACTIVITIES = OrderedDict({
     "CYCLING": 0.3,
     "WALKING": 0.2,
@@ -27,6 +30,21 @@ SCHEMA_TYPES = {
     'visitConfidence': 'random_digit_not_null', 
     'accuracyMeters': 'random_digit_not_null'
 }
+
+
+def write_zipfile(data, zipfile):
+    """
+
+    """
+
+    with ZipFile(zipfile, 'w') as zip_archive:
+        # Create files on zip archive
+        with zip_archive.open('Takeout/Location History/Semantic Location History/2021/2021_JANUARY.json', 'w') as file1:
+            file1.write(json.dumps(data).encode('utf-8'))
+        # with zip_archive.open('Takeout/Location History/Semantic Location History/2020/2020_JANUARY.json', 'w') as file1:
+        #     file1.write(json.dumps(data_2020).encode('utf-8'))
+        # with zip_archive.open('Takeout/Location History/Semantic Location History/2019/2019_JANUARY.json', 'w') as file1:
+        #     file1.write(json.dumps(data_2019).encode('utf-8'))
 
 
 def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):    
@@ -72,7 +90,9 @@ def create_places(total=1):
 def update_data(data, start_date):
     fake = Faker('nl_NL')
     start_time = start_date.timestamp() * 1000
-    delta_time = 7.3e6 # 2 hr
+    duration = NDAYS * 24 * 60 * 60 * 1e3 / NACTIVITIES
+    duration_place = 0.8 * duration
+    duration_activity = 0.2 * duration 
     places = create_places(total=NPLACES)
     elements = OrderedDict()
     for number, place in enumerate(places):
@@ -83,9 +103,10 @@ def update_data(data, start_date):
     placeId = fake.random_element(elements=elements)
     start_location = placeId
     for data_unit in data["timelineObjects"]:
-        end_time = start_time + delta_time
+        
         end_location = fake.random_element(elements=elements)
         if "placeVisit" in data_unit:
+            end_time = start_time + duration_place
             data_unit["placeVisit"]["duration"]["startTimestampMs"] = start_time
             data_unit["placeVisit"]["duration"]["endTimestampMs"] = end_time
             data_unit["placeVisit"]["location"]["address"] = places[start_location]["address"]
@@ -95,6 +116,7 @@ def update_data(data, start_date):
             data_unit["placeVisit"]["location"]["longitudeE7"] = places[start_location]["longitude"]*1e7      
 
         if "activitySegment" in data_unit.keys():
+            end_time = start_time + duration_activity
             data_unit["activitySegment"]["duration"]["startTimestampMs"] = start_time
             data_unit["activitySegment"]["duration"]["endTimestampMs"] = end_time
             data_unit["activitySegment"]['startLocation']['latitudeE7'] = places[start_location]["latitude"]*1e7
@@ -112,7 +134,7 @@ def update_data(data, start_date):
     return data
 
 
-def process(file_data):
+def fake_data(file_data):
     """Return relevant data from zipfile for years and months
     Args:
         file_data: zip file or object
@@ -134,7 +156,7 @@ def process(file_data):
                         builder.add_object(data)
                         break
     json_schema = builder.to_schema()
-    schema = get_faker_schema(json_schema["properties"], custom=SCHEMA_TYPES, iterations={"timelineObjects": 186})
+    schema = get_faker_schema(json_schema["properties"], custom=SCHEMA_TYPES, iterations={"timelineObjects": NACTIVITIES})
     fake = Faker('nl_NL')
     fake.add_provider(geo)
     faker = FakerSchema(faker=fake, locale='nl_NL')
@@ -145,5 +167,6 @@ def process(file_data):
 
 
 if __name__ == '__main__':
-    result = process("test/data/Location History.zip")
-    print(result)
+    data = fake_data("test/data/Location History.zip")
+    write_zipfile(data, "test.zip")
+
