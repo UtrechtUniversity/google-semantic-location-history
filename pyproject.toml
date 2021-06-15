@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "fake-google-semantic-location-history"
+version = "0.1.0"
+description = ""
+authors = ["Haili Hu <hailihu@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+genson = "^1.2.2"
+Faker = "^8.6.0"
+faker-schema = {git = "https://github.com/hailihu/faker-schema", rev = "feature-allow-arguments-in-schema-values"}
+geopy = "^2.1.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
