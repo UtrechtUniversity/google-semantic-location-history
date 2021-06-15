@@ -4,6 +4,7 @@ import re
 import zipfile
 from datetime import datetime
 from collections import OrderedDict
+from calendar import monthrange
 
 from zipfile import ZipFile
 from genson import SchemaBuilder
@@ -13,8 +14,7 @@ from faker_schema.faker_schema import FakerSchema
 from geopy.distance import geodesic
 
 YEARS = [2019, 2020]
-MONTHS = ["JANUARY"]
-NDAYS = 31
+MONTHS = ["JANUARY", "FEBRUARY"]
 NPLACES = 50
 NACTIVITIES = 500
 TOP_PLACES = [0.4, 0.3, 0.05]
@@ -75,7 +75,8 @@ def create_places(total=1):
 def update_data(data, start_date, places):
     fake = Faker('nl_NL')
     start_time = start_date.timestamp() * 1.e3
-    duration = NDAYS * 24 * 60 * 60 * 1.e3 / NACTIVITIES
+    ndays = monthrange(start_date.year, start_date.month)[1]
+    duration = ndays * 24 * 60 * 60 * 1.e3 / NACTIVITIES
     duration_place = 0.8 * duration
     duration_activity = 0.2 * duration 
 
@@ -116,6 +117,7 @@ def update_data(data, start_date, places):
             start_time = end_time
 
         start_location = end_location
+    # print("end", datetime.fromtimestamp(end_time/1e3))
 
     return data
 
