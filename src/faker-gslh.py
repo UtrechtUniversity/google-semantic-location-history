@@ -16,7 +16,6 @@ MONTHS = [
     "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 ]
-
 # Different behaviour per year
 NPLACES = {2019: 50, 2020: 50, 2021: 20}
 NACTIVITIES = {2019: 500, 2020: 500, 2021: 250}
@@ -154,7 +153,7 @@ def update_data(data, start_date, places, seed=None):
                 elements=ACTIVITIES[year])
             start = (places[start_location]["latitude"], places[start_location]["longitude"])
             end = (places[end_location]["latitude"], places[end_location]["longitude"])
-            data_unit["activitySegment"]["distance"] = geodesic(start, end).m
+            data_unit["activitySegment"]["distance"] = int(geodesic(start, end).m)
             start_time = end_time
 
         start_location = end_location
@@ -222,6 +221,7 @@ def fake_data(json_file):
     # Check if schema is unchanged
     if not json_schema == fake_schema:
         print("Warning json schema of original file and faked file are not identical")
+
     write_zipfile(fake_data, "Location History.zip")
     return data
 
