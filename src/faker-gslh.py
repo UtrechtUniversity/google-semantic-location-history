@@ -12,7 +12,7 @@ from faker.providers import geo
 from faker_schema.faker_schema import FakerSchema
 from geopy.distance import geodesic
 
-YEARS = [2020]
+YEARS = [2019, 2020]
 MONTHS = ["JANUARY"]
 NDAYS = 31
 NPLACES = 50
@@ -30,21 +30,6 @@ SCHEMA_TYPES = {
     'visitConfidence': 'random_digit_not_null', 
     'accuracyMeters': 'random_digit_not_null'
 }
-
-
-def write_zipfile(data, zipfile):
-    """
-
-    """
-
-    with ZipFile(zipfile, 'w') as zip_archive:
-        # Create files on zip archive
-        with zip_archive.open('Takeout/Location History/Semantic Location History/2021/2021_JANUARY.json', 'w') as file1:
-            file1.write(json.dumps(data).encode('utf-8'))
-        # with zip_archive.open('Takeout/Location History/Semantic Location History/2020/2020_JANUARY.json', 'w') as file1:
-        #     file1.write(json.dumps(data_2020).encode('utf-8'))
-        # with zip_archive.open('Takeout/Location History/Semantic Location History/2019/2019_JANUARY.json', 'w') as file1:
-        #     file1.write(json.dumps(data_2019).encode('utf-8'))
 
 
 def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):    
@@ -87,13 +72,13 @@ def create_places(total=1):
         places.update({fake.unique.pystr_format(): place})
     return places
 
-def update_data(data, start_date):
+def update_data(data, start_date, places):
     fake = Faker('nl_NL')
-    start_time = start_date.timestamp() * 1000
-    duration = NDAYS * 24 * 60 * 60 * 1e3 / NACTIVITIES
+    start_time = start_date.timestamp() * 1.e3
+    duration = NDAYS * 24 * 60 * 60 * 1.e3 / NACTIVITIES
     duration_place = 0.8 * duration
     duration_activity = 0.2 * duration 
-    places = create_places(total=NPLACES)
+
     elements = OrderedDict()
     for number, place in enumerate(places):
         if number < len(TOP_PLACES):
@@ -113,9 +98,10 @@ def update_data(data, start_date):
             data_unit["placeVisit"]["location"]["placeId"] = start_location   
             data_unit["placeVisit"]["location"]["name"] = places[start_location]["name"]    
             data_unit["placeVisit"]["location"]["latitudeE7"] = places[start_location]["latitude"]*1e7
-            data_unit["placeVisit"]["location"]["longitudeE7"] = places[start_location]["longitude"]*1e7      
+            data_unit["placeVisit"]["location"]["longitudeE7"] = places[start_location]["longitude"]*1e7
+            start_time = end_time      
 
-        if "activitySegment" in data_unit.keys():
+        if "activitySegment" in data_unit:
             end_time = start_time + duration_activity
             data_unit["activitySegment"]["duration"]["startTimestampMs"] = start_time
             data_unit["activitySegment"]["duration"]["endTimestampMs"] = end_time
@@ -127,46 +113,62 @@ def update_data(data, start_date):
             start = (places[start_location]["latitude"], places[start_location]["longitude"])
             end = (places[end_location]["latitude"], places[end_location]["longitude"])
             data_unit["activitySegment"]["distance"] = geodesic(start, end).m
+            start_time = end_time
 
-        start_time = end_time
         start_location = end_location
-    
+
     return data
 
 
-def fake_data(file_data):
-    """Return relevant data from zipfile for years and months
+def write_zipfile(data, zipfile):
+    """
+
+    """
+    with ZipFile(zipfile, 'w') as zip_archive:
+        for year, month in data:
+            with zip_archive.open(
+                'Takeout/Location History/Semantic Location History/' + str(year) + '/' + str(year) + '_' + month + '.json', 'w') as file1:
+                file1.write(json.dumps(data[(year, month)]).encode('utf-8')
+                )
+
+
+def fake_data(json_file):
+    """Return faked json data
     Args:
-        file_data: zip file or object
+        json_file: example json file with data to simulate
 
     Returns:
         dict: dict with summary and DataFrame with extracted data
     """
+
+    # get dict of visited places
+    places = create_places(total=NPLACES)
+
     builder = SchemaBuilder()
-
-    # Extract info from selected years and months
-    with zipfile.ZipFile(file_data) as zfile:
-        file_list = zfile.namelist()
-        for year in YEARS:
-            for month in MONTHS:
-                for name in file_list:
-                    monthfile = f"{year}_{month}.json"
-                    if re.search(monthfile, name) is not None:
-                        data = json.loads(zfile.read(name).decode("utf8"))
-                        builder.add_object(data)
-                        break
+    with open(json_file) as f:
+        data = json.load(f)
+    builder.add_object(data)
     json_schema = builder.to_schema()
-    schema = get_faker_schema(json_schema["properties"], custom=SCHEMA_TYPES, iterations={"timelineObjects": NACTIVITIES})
-    fake = Faker('nl_NL')
-    fake.add_provider(geo)
-    faker = FakerSchema(faker=fake, locale='nl_NL')
-    data = faker.generate_fake(schema)
-    data = update_data(data, datetime(2020, 1, 1))
 
+    fake_data = {}
+    for year in YEARS:
+        for month in MONTHS:
+            schema = get_faker_schema(
+                json_schema["properties"],
+                custom=SCHEMA_TYPES,
+                iterations={"timelineObjects": NACTIVITIES})
+            fake = Faker('nl_NL')
+            fake.add_provider(geo)
+            faker = FakerSchema(faker=fake, locale='nl_NL')
+            data = faker.generate_fake(schema)
+            month_number = datetime.strptime(month[:3], '%b').month
+            fake_data[(year, month)] = update_data(data, datetime(year, month_number, 1), places)
+
+    write_zipfile(fake_data, "Simulated Location History.zip")
     return data
 
 
 if __name__ == '__main__':
-    data = fake_data("test/data/Location History.zip")
-    write_zipfile(data, "test.zip")
+    data = fake_data("test/data/2020_JANUARY.json")
+
 
