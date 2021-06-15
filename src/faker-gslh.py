@@ -49,6 +49,13 @@ SCHEMA_TYPES = {
     'accuracyMeters': 'random_digit_not_null'
 }
 
+def get_json_schema(json_data):
+    builder = SchemaBuilder()
+    builder.add_object(json_data)
+    json_schema = builder.to_schema()
+
+    return json_schema
+
 
 def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):
     if "type" not in json_schema:
@@ -120,29 +127,29 @@ def update_data(data, start_date, places, seed=None):
         end_location = fake.random_element(elements=elements)
         if "placeVisit" in data_unit:
             end_time = start_time + duration_place
-            data_unit["placeVisit"]["duration"]["startTimestampMs"] = start_time
-            data_unit["placeVisit"]["duration"]["endTimestampMs"] = end_time
+            data_unit["placeVisit"]["duration"]["startTimestampMs"] = str(int(start_time))
+            data_unit["placeVisit"]["duration"]["endTimestampMs"] = str(int(end_time))
             data_unit["placeVisit"]["location"]["address"] = places[start_location]["address"]
             data_unit["placeVisit"]["location"]["placeId"] = start_location
             data_unit["placeVisit"]["location"]["name"] = places[start_location]["name"]
-            data_unit["placeVisit"]["location"]["latitudeE7"] = places[
-                start_location]["latitude"]*1e7
-            data_unit["placeVisit"]["location"]["longitudeE7"] = places[
-                start_location]["longitude"]*1e7
+            data_unit["placeVisit"]["location"]["latitudeE7"] = int(places[
+                start_location]["latitude"]*1e7)
+            data_unit["placeVisit"]["location"]["longitudeE7"] = int(places[
+                start_location]["longitude"]*1e7)
             start_time = end_time
 
         if "activitySegment" in data_unit:
             end_time = start_time + duration_activity
-            data_unit["activitySegment"]["duration"]["startTimestampMs"] = start_time
-            data_unit["activitySegment"]["duration"]["endTimestampMs"] = end_time
-            data_unit["activitySegment"]['startLocation']['latitudeE7'] = places[
-                start_location]["latitude"]*1e7
-            data_unit["activitySegment"]['startLocation']['longitudeE7'] = places[
-                start_location]["longitude"]*1e7
-            data_unit["activitySegment"]['endLocation']['latitudeE7'] = places[
-                end_location]["latitude"]
-            data_unit["activitySegment"]['endLocation']['longitudeE7'] = places[
-                end_location]["latitude"]
+            data_unit["activitySegment"]["duration"]["startTimestampMs"] = str(int(start_time))
+            data_unit["activitySegment"]["duration"]["endTimestampMs"] = str(int(end_time))
+            data_unit["activitySegment"]['startLocation']['latitudeE7'] = int(places[
+                start_location]["latitude"]*1e7)
+            data_unit["activitySegment"]['startLocation']['longitudeE7'] = int(places[
+                start_location]["longitude"]*1e7)
+            data_unit["activitySegment"]['endLocation']['latitudeE7'] = int(places[
+                end_location]["latitude"]*1e7)
+            data_unit["activitySegment"]['endLocation']['longitudeE7'] = int(places[
+                end_location]["latitude"]*1e7)
             data_unit["activitySegment"]["duration"]["activityType"] = fake.random_element(
                 elements=ACTIVITIES[year])
             start = (places[start_location]["latitude"], places[start_location]["longitude"])
@@ -183,11 +190,10 @@ def fake_data(json_file):
     # get dict of visited places
     places = create_places(total=max(NPLACES.values()))
 
-    builder = SchemaBuilder()
+    # Get json schema from json file
     with open(json_file) as f:
-        data = json.load(f)
-    builder.add_object(data)
-    json_schema = builder.to_schema()
+        json_data = json.load(f)
+        json_schema = get_json_schema(json_data)
 
     fake = Faker('nl_NL')
     fake.add_provider(geo)
@@ -205,15 +211,20 @@ def fake_data(json_file):
             data = faker.generate_fake(schema)
             month_number = datetime.strptime(month[:3], '%b').month
             seed += 1
-            fake_data[(year, month)] = update_data(
+            json_data = update_data(
                 data, datetime(year, month_number, 1),
                 dict(itertools.islice(places.items(), NPLACES[year])),
                 seed=seed
             )
+            fake_data[(year, month)] = json_data
+            fake_schema = get_json_schema(json_data)
 
+    # Check if schema is unchanged
+    if not json_schema == fake_schema:
+        print("Warning json schema of original file and faked file are not identical")
     write_zipfile(fake_data, "Location History.zip")
     return data
 
 
 if __name__ == '__main__':
-    data = fake_data("test/data/2020_JANUARY.json")
+    data = fake_data("test/data/2021_JANUARY.json")
