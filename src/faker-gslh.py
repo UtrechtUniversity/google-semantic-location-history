@@ -1,7 +1,5 @@
 import json
 import itertools
-import re
-import zipfile
 from datetime import datetime
 from collections import OrderedDict
 from calendar import monthrange
@@ -14,8 +12,10 @@ from faker_schema.faker_schema import FakerSchema
 from geopy.distance import geodesic
 
 YEARS = [2019, 2020, 2021]
-MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
-    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+MONTHS = [
+    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+]
 
 # Different behaviour per year
 NPLACES = {2019: 50, 2020: 50, 2021: 20}
@@ -38,25 +38,26 @@ ACTIVITIES = {
         "CYCLING": 0.4,
         "WALKING": 0.5,
         "IN_VEHICLE": 0.1
-    }),                
+    }),
 }
 FRACTION_PLACES = {2019: 0.8, 2020: 0.8, 2021: 0.95}
 
 # schema with types
 SCHEMA_TYPES = {
     'name': 'company',
-    'visitConfidence': 'random_digit_not_null', 
+    'visitConfidence': 'random_digit_not_null',
     'accuracyMeters': 'random_digit_not_null'
 }
 
 
-def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):    
+def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):
     if "type" not in json_schema:
         key = next(iter(json_schema))
         if isinstance(custom, dict) and key in custom:
             value = custom[key]
         else:
-            value = get_faker_schema(json_schema[key], custom=custom, iterations=iterations, parent_key=key)
+            value = get_faker_schema(
+                json_schema[key], custom=custom, iterations=iterations, parent_key=key)
         return {key: value}
     elif json_schema['type'] == "object":
         value = {}
@@ -64,7 +65,8 @@ def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):
             value.update(get_faker_schema({prop: val}, custom=custom, iterations=iterations))
     elif json_schema['type'] == "array":
         iters = iterations.get(parent_key, 1)
-        value = [get_faker_schema(json_schema['items'], custom=custom, iterations=iterations) for i in range(iters)]
+        value = [get_faker_schema(
+            json_schema['items'], custom=custom, iterations=iterations) for i in range(iters)]
     elif json_schema['type'] == "string":
         value = "pystr_format"
     elif json_schema['type'] == "number":
@@ -72,6 +74,7 @@ def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):
     elif json_schema['type'] == "integer":
         value = "pyint"
     return value
+
 
 def create_places(total=1):
     fake = Faker('nl_NL')
@@ -83,12 +86,13 @@ def create_places(total=1):
         longitude = fake.unique.coordinate(center=latlon[1], radius=0.05)
         place = {
             "name": fake.unique.company(),
-            "address": fake.unique.address(), 
+            "address": fake.unique.address(),
             "latitude": float(latitude),
             "longitude": float(longitude)
         }
         places.update({fake.unique.pystr_format(): place})
     return places
+
 
 def update_data(data, start_date, places):
     fake = Faker('nl_NL')
@@ -97,7 +101,7 @@ def update_data(data, start_date, places):
     ndays = monthrange(year, start_date.month)[1]
     duration = ndays * 24 * 60 * 60 * 1.e3 / NACTIVITIES[year]
     duration_place = FRACTION_PLACES[year] * duration
-    duration_activity = (1.0 - FRACTION_PLACES[year]) * duration 
+    duration_activity = (1.0 - FRACTION_PLACES[year]) * duration
 
     elements = OrderedDict()
     for number, place in enumerate(places):
@@ -108,28 +112,35 @@ def update_data(data, start_date, places):
     placeId = fake.random_element(elements=elements)
     start_location = placeId
     for data_unit in data["timelineObjects"]:
-        
+
         end_location = fake.random_element(elements=elements)
         if "placeVisit" in data_unit:
             end_time = start_time + duration_place
             data_unit["placeVisit"]["duration"]["startTimestampMs"] = start_time
             data_unit["placeVisit"]["duration"]["endTimestampMs"] = end_time
             data_unit["placeVisit"]["location"]["address"] = places[start_location]["address"]
-            data_unit["placeVisit"]["location"]["placeId"] = start_location   
-            data_unit["placeVisit"]["location"]["name"] = places[start_location]["name"]    
-            data_unit["placeVisit"]["location"]["latitudeE7"] = places[start_location]["latitude"]*1e7
-            data_unit["placeVisit"]["location"]["longitudeE7"] = places[start_location]["longitude"]*1e7
-            start_time = end_time      
+            data_unit["placeVisit"]["location"]["placeId"] = start_location
+            data_unit["placeVisit"]["location"]["name"] = places[start_location]["name"]
+            data_unit["placeVisit"]["location"]["latitudeE7"] = places[
+                start_location]["latitude"]*1e7
+            data_unit["placeVisit"]["location"]["longitudeE7"] = places[
+                start_location]["longitude"]*1e7
+            start_time = end_time
 
         if "activitySegment" in data_unit:
             end_time = start_time + duration_activity
             data_unit["activitySegment"]["duration"]["startTimestampMs"] = start_time
             data_unit["activitySegment"]["duration"]["endTimestampMs"] = end_time
-            data_unit["activitySegment"]['startLocation']['latitudeE7'] = places[start_location]["latitude"]*1e7
-            data_unit["activitySegment"]['startLocation']['longitudeE7'] = places[start_location]["longitude"]*1e7           
-            data_unit["activitySegment"]['endLocation']['latitudeE7'] = places[end_location]["latitude"]
-            data_unit["activitySegment"]['endLocation']['longitudeE7'] = places[end_location]["latitude"]
-            data_unit["activitySegment"]["duration"]["activityType"] = fake.random_element(elements=ACTIVITIES[year])
+            data_unit["activitySegment"]['startLocation']['latitudeE7'] = places[
+                start_location]["latitude"]*1e7
+            data_unit["activitySegment"]['startLocation']['longitudeE7'] = places[
+                start_location]["longitude"]*1e7
+            data_unit["activitySegment"]['endLocation']['latitudeE7'] = places[
+                end_location]["latitude"]
+            data_unit["activitySegment"]['endLocation']['longitudeE7'] = places[
+                end_location]["latitude"]
+            data_unit["activitySegment"]["duration"]["activityType"] = fake.random_element(
+                elements=ACTIVITIES[year])
             start = (places[start_location]["latitude"], places[start_location]["longitude"])
             end = (places[end_location]["latitude"], places[end_location]["longitude"])
             data_unit["activitySegment"]["distance"] = geodesic(start, end).m
@@ -148,8 +159,11 @@ def write_zipfile(data, zipfile):
     with ZipFile(zipfile, 'w') as zip_archive:
         for year, month in data:
             with zip_archive.open(
-                'Takeout/Location History/Semantic Location History/' + str(year) + '/' + str(year) + '_' + month + '.json', 'w') as file1:
-                file1.write(json.dumps(data[(year, month)]).encode('utf-8')
+                'Takeout/Location History/Semantic Location History/' +
+                str(year) + '/' + str(year) + '_' + month + '.json', 'w'
+            ) as file1:
+                file1.write(
+                    json.dumps(data[(year, month)]).encode('utf-8')
                 )
 
 
@@ -183,13 +197,14 @@ def fake_data(json_file):
             faker = FakerSchema(faker=fake, locale='nl_NL')
             data = faker.generate_fake(schema)
             month_number = datetime.strptime(month[:3], '%b').month
-            fake_data[(year, month)] = update_data(data, datetime(year, month_number, 1), dict(itertools.islice(places.items(), NPLACES[year])))
+            fake_data[(year, month)] = update_data(
+                data, datetime(year, month_number, 1),
+                dict(itertools.islice(places.items(), NPLACES[year]))
+            )
 
-    write_zipfile(fake_data, "Simulated Location History.zip")
+    write_zipfile(fake_data, "Location History.zip")
     return data
 
 
 if __name__ == '__main__':
     data = fake_data("test/data/2020_JANUARY.json")
-
-
