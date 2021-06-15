@@ -94,8 +94,8 @@ def create_places(total=1):
     return places
 
 
-def update_data(data, start_date, places):
-    fake = Faker('nl_NL')
+def update_data(data, start_date, places, seed=None):
+
     start_time = start_date.timestamp() * 1.e3
     year = start_date.year
     ndays = monthrange(year, start_date.month)[1]
@@ -109,6 +109,10 @@ def update_data(data, start_date, places):
             elements[place] = TOP_PLACES[year][number]
         else:
             elements[place] = (1.0 - sum(TOP_PLACES[year]))/(NPLACES[year] - len(TOP_PLACES[year]))
+
+    fake = Faker()
+    if seed is not None:
+        fake.seed_instance(seed)
     placeId = fake.random_element(elements=elements)
     start_location = placeId
     for data_unit in data["timelineObjects"]:
@@ -185,21 +189,26 @@ def fake_data(json_file):
     builder.add_object(data)
     json_schema = builder.to_schema()
 
+    fake = Faker('nl_NL')
+    fake.add_provider(geo)
+    faker = FakerSchema(faker=fake, locale='nl_NL')
+
     fake_data = {}
+    seed = 0
     for year in YEARS:
         for month in MONTHS:
             schema = get_faker_schema(
                 json_schema["properties"],
                 custom=SCHEMA_TYPES,
                 iterations={"timelineObjects": NACTIVITIES[year]})
-            fake = Faker('nl_NL')
-            fake.add_provider(geo)
-            faker = FakerSchema(faker=fake, locale='nl_NL')
+
             data = faker.generate_fake(schema)
             month_number = datetime.strptime(month[:3], '%b').month
+            seed += 1
             fake_data[(year, month)] = update_data(
                 data, datetime(year, month_number, 1),
-                dict(itertools.islice(places.items(), NPLACES[year]))
+                dict(itertools.islice(places.items(), NPLACES[year])),
+                seed=seed
             )
 
     write_zipfile(fake_data, "Location History.zip")
