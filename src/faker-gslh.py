@@ -13,17 +13,35 @@ from faker.providers import geo
 from faker_schema.faker_schema import FakerSchema
 from geopy.distance import geodesic
 
-YEARS = [2019, 2020]
-MONTHS = ["JANUARY", "FEBRUARY"]
-NPLACES = 50
-NACTIVITIES = 500
-TOP_PLACES = [0.4, 0.3, 0.05]
-ACTIVITIES = OrderedDict({
-    "CYCLING": 0.3,
-    "WALKING": 0.2,
-    "IN_VEHICLE": 0.3,
-    "IN_TRAIN": 0.2
-})
+YEARS = [2019, 2020, 2021]
+MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+
+# Different behaviour per year
+NPLACES = {2019: 50, 2020: 50, 2021: 20}
+NACTIVITIES = {2019: 500, 2020: 500, 2021: 250}
+TOP_PLACES = {2019: [0.4, 0.3, 0.05], 2020: [0.4, 0.3, 0.05], 2021: [0.8, 0.03, 0.02]}
+ACTIVITIES = {
+    2019: OrderedDict({
+        "CYCLING": 0.3,
+        "WALKING": 0.2,
+        "IN_VEHICLE": 0.3,
+        "IN_TRAIN": 0.2
+    }),
+    2020: OrderedDict({
+        "CYCLING": 0.3,
+        "WALKING": 0.2,
+        "IN_VEHICLE": 0.3,
+        "IN_TRAIN": 0.2
+    }),
+    2021: OrderedDict({
+        "CYCLING": 0.4,
+        "WALKING": 0.5,
+        "IN_VEHICLE": 0.1
+    }),                
+}
+FRACTION_PLACES = {2019: 0.8, 2020: 0.8, 2021: 0.95}
+
 # schema with types
 SCHEMA_TYPES = {
     'name': 'company',
@@ -61,8 +79,8 @@ def create_places(total=1):
     places = {}
     latlon = fake.local_latlng(country_code="NL")
     for number in range(total):
-        latitude = fake.unique.coordinate(center=latlon[0], radius=0.1)
-        longitude = fake.unique.coordinate(center=latlon[1], radius=0.1)
+        latitude = fake.unique.coordinate(center=latlon[0], radius=0.05)
+        longitude = fake.unique.coordinate(center=latlon[1], radius=0.05)
         place = {
             "name": fake.unique.company(),
             "address": fake.unique.address(), 
@@ -75,17 +93,18 @@ def create_places(total=1):
 def update_data(data, start_date, places):
     fake = Faker('nl_NL')
     start_time = start_date.timestamp() * 1.e3
-    ndays = monthrange(start_date.year, start_date.month)[1]
-    duration = ndays * 24 * 60 * 60 * 1.e3 / NACTIVITIES
-    duration_place = 0.8 * duration
-    duration_activity = 0.2 * duration 
+    year = start_date.year
+    ndays = monthrange(year, start_date.month)[1]
+    duration = ndays * 24 * 60 * 60 * 1.e3 / NACTIVITIES[year]
+    duration_place = FRACTION_PLACES[year] * duration
+    duration_activity = (1.0 - FRACTION_PLACES[year]) * duration 
 
     elements = OrderedDict()
     for number, place in enumerate(places):
-        if number < len(TOP_PLACES):
-            elements[place] = TOP_PLACES[number]
+        if number < len(TOP_PLACES[year]):
+            elements[place] = TOP_PLACES[year][number]
         else:
-            elements[place] = (1.0 - sum(TOP_PLACES))/(NPLACES - len(TOP_PLACES))
+            elements[place] = (1.0 - sum(TOP_PLACES[year]))/(NPLACES[year] - len(TOP_PLACES[year]))
     placeId = fake.random_element(elements=elements)
     start_location = placeId
     for data_unit in data["timelineObjects"]:
@@ -110,7 +129,7 @@ def update_data(data, start_date, places):
             data_unit["activitySegment"]['startLocation']['longitudeE7'] = places[start_location]["longitude"]*1e7           
             data_unit["activitySegment"]['endLocation']['latitudeE7'] = places[end_location]["latitude"]
             data_unit["activitySegment"]['endLocation']['longitudeE7'] = places[end_location]["latitude"]
-            data_unit["activitySegment"]["duration"]["activityType"] = fake.random_element(elements=ACTIVITIES)
+            data_unit["activitySegment"]["duration"]["activityType"] = fake.random_element(elements=ACTIVITIES[year])
             start = (places[start_location]["latitude"], places[start_location]["longitude"])
             end = (places[end_location]["latitude"], places[end_location]["longitude"])
             data_unit["activitySegment"]["distance"] = geodesic(start, end).m
@@ -144,7 +163,7 @@ def fake_data(json_file):
     """
 
     # get dict of visited places
-    places = create_places(total=NPLACES)
+    places = create_places(total=max(NPLACES.values()))
 
     builder = SchemaBuilder()
     with open(json_file) as f:
@@ -158,13 +177,13 @@ def fake_data(json_file):
             schema = get_faker_schema(
                 json_schema["properties"],
                 custom=SCHEMA_TYPES,
-                iterations={"timelineObjects": NACTIVITIES})
+                iterations={"timelineObjects": NACTIVITIES[year]})
             fake = Faker('nl_NL')
             fake.add_provider(geo)
             faker = FakerSchema(faker=fake, locale='nl_NL')
             data = faker.generate_fake(schema)
             month_number = datetime.strptime(month[:3], '%b').month
-            fake_data[(year, month)] = update_data(data, datetime(year, month_number, 1), places)
+            fake_data[(year, month)] = update_data(data, datetime(year, month_number, 1), dict(itertools.islice(places.items(), NPLACES[year])))
 
     write_zipfile(fake_data, "Simulated Location History.zip")
     return data
