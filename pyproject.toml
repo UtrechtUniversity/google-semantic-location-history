@@ -8,8 +8,8 @@ authors = ["Haili Hu <hailihu@gmail.com>"]
 python = "^3.9"
 genson = "^1.2.2"
 Faker = "^8.6.0"
-faker-schema = {git = "https://github.com/hailihu/faker-schema", rev = "feature-allow-arguments-in-schema-values"}
 geopy = "^2.1.0"
+faker-schema = "^0.1.4"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
