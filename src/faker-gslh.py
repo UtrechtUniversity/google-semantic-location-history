@@ -74,7 +74,7 @@ def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):
         value = [get_faker_schema(
             json_schema['items'], custom=custom, iterations=iterations) for i in range(iters)]
     elif json_schema['type'] == "string":
-        value = "pystr_format"
+        value = "pystr"
     elif json_schema['type'] == "number":
         value = "pyfloat"
     elif json_schema['type'] == "integer":
