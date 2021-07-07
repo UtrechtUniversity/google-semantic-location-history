@@ -1,0 +1,4 @@
+[DESIGN]
+
+# Maximum number of locals for function / method body
+max-locals=20
