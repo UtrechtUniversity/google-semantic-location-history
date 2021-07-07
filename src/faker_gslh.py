@@ -197,7 +197,6 @@ def fake_data(json_file):
                 seed=seed
             )
             faked_data[(year, month)] = json_data
-            fake_schema = get_json_schema(json_data)
 
     return faked_data
 
