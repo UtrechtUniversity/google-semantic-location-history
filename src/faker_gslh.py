@@ -1,3 +1,4 @@
+"""Generate fake Google Semantic Location history data"""
 import json
 import itertools
 from datetime import datetime
@@ -5,11 +6,13 @@ from collections import OrderedDict
 from calendar import monthrange
 
 from zipfile import ZipFile
-from genson import SchemaBuilder
 from faker import Faker
 from faker.providers import geo
 from faker_schema.faker_schema import FakerSchema
 from geopy.distance import geodesic
+
+from get_faker_schema import get_json_schema, get_faker_schema
+
 
 YEARS = [2019, 2020, 2021]
 MONTHS = [
@@ -48,46 +51,19 @@ SCHEMA_TYPES = {
     'accuracyMeters': 'random_digit_not_null'
 }
 
-def get_json_schema(json_data):
-    builder = SchemaBuilder()
-    builder.add_object(json_data)
-    json_schema = builder.to_schema()
-
-    return json_schema
-
-
-def get_faker_schema(json_schema, custom=None, iterations={}, parent_key=None):
-    if "type" not in json_schema:
-        key = next(iter(json_schema))
-        if isinstance(custom, dict) and key in custom:
-            value = custom[key]
-        else:
-            value = get_faker_schema(
-                json_schema[key], custom=custom, iterations=iterations, parent_key=key)
-        return {key: value}
-    elif json_schema['type'] == "object":
-        value = {}
-        for prop, val in json_schema["properties"].items():
-            value.update(get_faker_schema({prop: val}, custom=custom, iterations=iterations))
-    elif json_schema['type'] == "array":
-        iters = iterations.get(parent_key, 1)
-        value = [get_faker_schema(
-            json_schema['items'], custom=custom, iterations=iterations) for i in range(iters)]
-    elif json_schema['type'] == "string":
-        value = "pystr"
-    elif json_schema['type'] == "number":
-        value = "pyfloat"
-    elif json_schema['type'] == "integer":
-        value = "pyint"
-    return value
-
 
 def create_places(total=1):
+    """Create dictionary with visited places
+    Args:
+        total (int): number of places
+    Returns:
+        dict: dictionary with visited places with name, address and location
+    """
     fake = Faker('nl_NL')
     fake.add_provider(geo)
     places = {}
     latlon = fake.local_latlng(country_code="NL")
-    for number in range(total):
+    for _ in range(total):
         latitude = fake.unique.coordinate(center=latlon[0], radius=0.05)
         longitude = fake.unique.coordinate(center=latlon[1], radius=0.05)
         place = {
@@ -101,11 +77,17 @@ def create_places(total=1):
 
 
 def update_data(data, start_date, places, seed=None):
-
+    """ Update GSLH data with specified places, activities and durations
+    Args:
+        data (dict): data to update
+        places (dict): places to select from
+        seed (int): Optionally seed Faker for reproducability
+    Returns:
+        dict: dictionary with places containing name, address and location
+    """
     start_time = start_date.timestamp() * 1.e3
     year = start_date.year
-    ndays = monthrange(year, start_date.month)[1]
-    duration = ndays * 24 * 60 * 60 * 1.e3 / NACTIVITIES[year]
+    duration = monthrange(year, start_date.month)[1] * 24 * 60 * 60 * 1.e3 / NACTIVITIES[year]
     duration_place = FRACTION_PLACES[year] * duration
     duration_activity = (1.0 - FRACTION_PLACES[year]) * duration
 
@@ -119,11 +101,10 @@ def update_data(data, start_date, places, seed=None):
     fake = Faker()
     if seed is not None:
         fake.seed_instance(seed)
-    placeId = fake.random_element(elements=elements)
-    start_location = placeId
+    start_location = fake.random_element(elements=elements)
     for data_unit in data["timelineObjects"]:
-
         end_location = fake.random_element(elements=elements)
+
         if "placeVisit" in data_unit:
             end_time = start_time + duration_place
             data_unit["placeVisit"]["duration"]["startTimestampMs"] = str(int(start_time))
@@ -157,14 +138,15 @@ def update_data(data, start_date, places, seed=None):
             start_time = end_time
 
         start_location = end_location
-    # print("end", datetime.fromtimestamp(end_time/1e3))
 
     return data
 
 
 def write_zipfile(data, zipfile):
-    """
-
+    """ Write zipfile with monthly JSON files
+    Args:
+        data (dict): dict with data per year and month
+        zipfile (str): name of zipfile
     """
     with ZipFile(zipfile, 'w') as zip_archive:
         for year, month in data:
@@ -181,7 +163,6 @@ def fake_data(json_file):
     """Return faked json data
     Args:
         json_file: example json file with data to simulate
-
     Returns:
         dict: dict with summary and DataFrame with extracted data
     """
@@ -190,15 +171,15 @@ def fake_data(json_file):
     places = create_places(total=max(NPLACES.values()))
 
     # Get json schema from json file
-    with open(json_file) as f:
-        json_data = json.load(f)
+    with open(json_file) as file_object:
+        json_data = json.load(file_object)
         json_schema = get_json_schema(json_data)
 
     fake = Faker('nl_NL')
     fake.add_provider(geo)
     faker = FakerSchema(faker=fake, locale='nl_NL')
 
-    fake_data = {}
+    faked_data = {}
     seed = 0
     for year in YEARS:
         for month in MONTHS:
@@ -215,16 +196,16 @@ def fake_data(json_file):
                 dict(itertools.islice(places.items(), NPLACES[year])),
                 seed=seed
             )
-            fake_data[(year, month)] = json_data
+            faked_data[(year, month)] = json_data
             fake_schema = get_json_schema(json_data)
 
     # Check if schema is unchanged
     if not json_schema == fake_schema:
         print("Warning json schema of original file and faked file are not identical")
 
-    write_zipfile(fake_data, "Location History.zip")
-    return data
+    return faked_data
 
 
 if __name__ == '__main__':
-    data = fake_data("test/data/2021_JANUARY.json")
+    location_data = fake_data("test/data/2021_JANUARY.json")
+    write_zipfile(location_data, "Location History.zip")
