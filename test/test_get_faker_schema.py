@@ -4,376 +4,380 @@ from src.get_faker_schema import get_json_schema, get_faker_schema
 
 
 GSLH_JSON_SCHEMA = {
-    '$schema': 'http://json-schema.org/schema#',
-    'type': 'object',
-    'properties': {
-        'timelineObjects': {
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'activitySegment': {
-                        'type': 'object',
-                        'properties': {
-                            'startLocation': {
-                                'type': 'object',
-                                'properties': {
-                                    'latitudeE7': {
-                                        'type': 'integer'
-                                    },
-                                    'longitudeE7': {
-                                        'type': 'integer'
-                                    }
-                                },
-                                'required': ['latitudeE7', 'longitudeE7']
-                            },
-                            'endLocation': {
-                                'type': 'object',
-                                'properties': {
-                                    'latitudeE7': {
-                                        'type': 'integer'
-                                    },
-                                    'longitudeE7': {
-                                        'type': 'integer'
-                                    }
-                                },
-                                'required': ['latitudeE7', 'longitudeE7']
-                            },
-                            'duration': {
-                                'type': 'object',
-                                'properties': {
-                                    'startTimestampMs': {
-                                        'type': 'string'
-                                    },
-                                    'endTimestampMs': {
-                                        'type': 'string'
-                                    }
-                                },
-                                'required': ['endTimestampMs', 'startTimestampMs']
-                            },
-                            'distance': {
-                                'type': 'integer'
-                            },
-                            'activityType': {
-                                'type': 'string'
-                            },
-                            'confidence': {
-                                'type': 'string'
-                            },
-                            'activities': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'activityType': {
-                                            'type': 'string'
-                                        },
-                                        'probability': {
-                                            'type': 'number'
-                                        }
-                                    },
-                                    'required': ['activityType', 'probability']
-                                }
-                            },
-                            'waypointPath': {
-                                'type': 'object',
-                                'properties': {
-                                    'waypoints': {
-                                        'type': 'array',
-                                        'items': {
-                                            'type': 'object',
-                                            'properties': {
-                                                'latE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'lngE7': {
-                                                    'type': 'integer'
-                                                }
-                                            },
-                                            'required': ['latE7', 'lngE7']
-                                        }
-                                    }
-                                },
-                                'required': ['waypoints']
-                            },
-                            'simplifiedRawPath': {
-                                'type': 'object',
-                                'properties': {
-                                    'points': {
-                                        'type': 'array',
-                                        'items': {
-                                            'type': 'object',
-                                            'properties': {
-                                                'latE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'lngE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'timestampMs': {
-                                                    'type': 'string'
-                                                },
-                                                'accuracyMeters': {
-                                                    'type': 'integer'
-                                                }
-                                            },
-                                            'required': ['accuracyMeters', 'latE7', 'lngE7', 'timestampMs']
-                                        }
-                                    }
-                                },
-                                'required': ['points']
-                            },
-                            'transitPath': {
-                                'type': 'object',
-                                'properties': {
-                                    'transitStops': {
-                                        'type': 'array',
-                                        'items': {
-                                            'type': 'object',
-                                            'properties': {
-                                                'latitudeE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'longitudeE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'placeId': {
-                                                    'type': 'string'
-                                                },
-                                                'name': {
-                                                    'type': 'string'
-                                                }
-                                            },
-                                            'required': ['latitudeE7', 'longitudeE7', 'name', 'placeId']
-                                        }
-                                    },
-                                    'name': {
-                                        'type': 'string'
-                                    },
-                                    'hexRgbColor': {
-                                        'type': 'string'
-                                    }
-                                },
-                                'required': ['hexRgbColor', 'name', 'transitStops']
-                            }
-                        },
-                        'required': ['activities', 'activityType', 'confidence', 'distance', 'duration', 'endLocation', 'startLocation']
-                    },
-                    'placeVisit': {
-                        'type': 'object',
-                        'properties': {
-                            'location': {
-                                'type': 'object',
-                                'properties': {
-                                    'latitudeE7': {
-                                        'type': 'integer'
-                                    },
-                                    'longitudeE7': {
-                                        'type': 'integer'
-                                    },
-                                    'placeId': {
-                                        'type': 'string'
-                                    },
-                                    'address': {
-                                        'type': 'string'
-                                    },
-                                    'name': {
-                                        'type': 'string'
-                                    },
-                                    'sourceInfo': {
-                                        'type': 'object',
-                                        'properties': {
-                                            'deviceTag': {
-                                                'type': 'integer'
-                                            }
-                                        },
-                                        'required': ['deviceTag']
-                                    },
-                                    'locationConfidence': {
-                                        'type': 'number'
-                                    },
-                                    'semanticType': {
-                                        'type': 'string'
-                                    }
-                                },
-                                'required': ['address', 'latitudeE7', 'locationConfidence', 'longitudeE7', 'name', 'placeId', 'sourceInfo']
-                            },
-                            'duration': {
-                                'type': 'object',
-                                'properties': {
-                                    'startTimestampMs': {
-                                        'type': 'string'
-                                    },
-                                    'endTimestampMs': {
-                                        'type': 'string'
-                                    }
-                                },
-                                'required': ['endTimestampMs', 'startTimestampMs']
-                            },
-                            'placeConfidence': {
-                                'type': 'string'
-                            },
-                            'centerLatE7': {
-                                'type': 'integer'
-                            },
-                            'centerLngE7': {
-                                'type': 'integer'
-                            },
-                            'visitConfidence': {
-                                'type': 'integer'
-                            },
-                            'otherCandidateLocations': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'latitudeE7': {
-                                            'type': 'integer'
-                                        },
-                                        'longitudeE7': {
-                                            'type': 'integer'
-                                        },
-                                        'placeId': {
-                                            'type': 'string'
-                                        },
-                                        'locationConfidence': {
-                                            'type': 'number'
-                                        },
-                                        'semanticType': {
-                                            'type': 'string'
-                                        }
-                                    },
-                                    'required': ['latitudeE7', 'locationConfidence', 'longitudeE7', 'placeId']
-                                }
-                            },
-                            'editConfirmationStatus': {
-                                'type': 'string'
-                            },
-                            'childVisits': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'location': {
-                                            'type': 'object',
-                                            'properties': {
-                                                'latitudeE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'longitudeE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'placeId': {
-                                                    'type': 'string'
-                                                },
-                                                'address': {
-                                                    'type': 'string'
-                                                },
-                                                'name': {
-                                                    'type': 'string'
-                                                },
-                                                'sourceInfo': {
-                                                    'type': 'object',
-                                                    'properties': {
-                                                        'deviceTag': {
-                                                            'type': 'integer'
-                                                        }
-                                                    },
-                                                    'required': ['deviceTag']
-                                                },
-                                                'locationConfidence': {
-                                                    'type': 'number'
-                                                }
-                                            },
-                                            'required': ['address', 'latitudeE7', 'locationConfidence', 'longitudeE7', 'name', 'placeId', 'sourceInfo']
-                                        },
-                                        'duration': {
-                                            'type': 'object',
-                                            'properties': {
-                                                'startTimestampMs': {
-                                                    'type': 'string'
-                                                },
-                                                'endTimestampMs': {
-                                                    'type': 'string'
-                                                }
-                                            },
-                                            'required': ['endTimestampMs', 'startTimestampMs']
-                                        },
-                                        'placeConfidence': {
-                                            'type': 'string'
-                                        },
-                                        'centerLatE7': {
-                                            'type': 'integer'
-                                        },
-                                        'centerLngE7': {
-                                            'type': 'integer'
-                                        },
-                                        'visitConfidence': {
-                                            'type': 'integer'
-                                        },
-                                        'otherCandidateLocations': {
-                                            'type': 'array',
-                                            'items': {
-                                                'type': 'object',
-                                                'properties': {
-                                                    'latitudeE7': {
-                                                        'type': 'integer'
-                                                    },
-                                                    'longitudeE7': {
-                                                        'type': 'integer'
-                                                    },
-                                                    'placeId': {
-                                                        'type': 'string'
-                                                    },
-                                                    'locationConfidence': {
-                                                        'type': 'number'
-                                                    }
-                                                },
-                                                'required': ['latitudeE7', 'locationConfidence', 'longitudeE7', 'placeId']
-                                            }
-                                        },
-                                        'editConfirmationStatus': {
-                                            'type': 'string'
-                                        }
-                                    },
-                                    'required': ['centerLatE7', 'centerLngE7', 'duration', 'editConfirmationStatus', 'location', 'otherCandidateLocations', 'placeConfidence', 'visitConfidence']
-                                }
-                            },
-                            'simplifiedRawPath': {
-                                'type': 'object',
-                                'properties': {
-                                    'points': {
-                                        'type': 'array',
-                                        'items': {
-                                            'type': 'object',
-                                            'properties': {
-                                                'latE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'lngE7': {
-                                                    'type': 'integer'
-                                                },
-                                                'timestampMs': {
-                                                    'type': 'string'
-                                                },
-                                                'accuracyMeters': {
-                                                    'type': 'integer'
-                                                }
-                                            },
-                                            'required': ['accuracyMeters', 'latE7', 'lngE7', 'timestampMs']
-                                        }
-                                    }
-                                },
-                                'required': ['points']
-                            }
-                        },
-                        'required': ['centerLatE7', 'centerLngE7', 'duration', 'editConfirmationStatus', 'location', 'otherCandidateLocations', 'placeConfidence', 'visitConfidence']
-                    }
-                }
-            }
-        }
-    },
-    'required': ['timelineObjects']
+	'$schema': 'http://json-schema.org/schema#',
+	'type': 'object',
+	'properties': {
+		'timelineObjects': {
+			'type': 'array',
+			'items': {
+				'type': 'object',
+				'properties': {
+					'activitySegment': {
+						'type': 'object',
+						'properties': {
+							'startLocation': {
+								'type': 'object',
+								'properties': {
+									'latitudeE7': {
+										'type': 'integer'
+									},
+									'longitudeE7': {
+										'type': 'integer'
+									}
+								},
+								'required': ['latitudeE7', 'longitudeE7']
+							},
+							'endLocation': {
+								'type': 'object',
+								'properties': {
+									'latitudeE7': {
+										'type': 'integer'
+									},
+									'longitudeE7': {
+										'type': 'integer'
+									}
+								},
+								'required': ['latitudeE7', 'longitudeE7']
+							},
+							'duration': {
+								'type': 'object',
+								'properties': {
+									'startTimestampMs': {
+										'type': 'string'
+									},
+									'endTimestampMs': {
+										'type': 'string'
+									},
+									'activityType': {
+										'type': 'string'
+									}
+								},
+								'required': ['activityType', 'endTimestampMs', 'startTimestampMs']
+							},
+							'distance': {
+								'type': 'integer'
+							},
+							'activityType': {
+								'type': 'string'
+							},
+							'confidence': {
+								'type': 'string'
+							},
+							'activities': {
+								'type': 'array',
+								'items': {
+									'type': 'object',
+									'properties': {
+										'activityType': {
+											'type': 'string'
+										},
+										'probability': {
+											'type': 'number'
+										}
+									},
+									'required': ['activityType', 'probability']
+								}
+							},
+							'waypointPath': {
+								'type': 'object',
+								'properties': {
+									'waypoints': {
+										'type': 'array',
+										'items': {
+											'type': 'object',
+											'properties': {
+												'latE7': {
+													'type': 'integer'
+												},
+												'lngE7': {
+													'type': 'integer'
+												}
+											},
+											'required': ['latE7', 'lngE7']
+										}
+									}
+								},
+								'required': ['waypoints']
+							},
+							'simplifiedRawPath': {
+								'type': 'object',
+								'properties': {
+									'points': {
+										'type': 'array',
+										'items': {
+											'type': 'object',
+											'properties': {
+												'latE7': {
+													'type': 'integer'
+												},
+												'lngE7': {
+													'type': 'integer'
+												},
+												'timestampMs': {
+													'type': 'string'
+												},
+												'accuracyMeters': {
+													'type': 'integer'
+												}
+											},
+											'required': ['accuracyMeters', 'latE7', 'lngE7', 'timestampMs']
+										}
+									}
+								},
+								'required': ['points']
+							},
+							'transitPath': {
+								'type': 'object',
+								'properties': {
+									'transitStops': {
+										'type': 'array',
+										'items': {
+											'type': 'object',
+											'properties': {
+												'latitudeE7': {
+													'type': 'integer'
+												},
+												'longitudeE7': {
+													'type': 'integer'
+												},
+												'placeId': {
+													'type': 'string'
+												},
+												'name': {
+													'type': 'string'
+												}
+											},
+											'required': ['latitudeE7', 'longitudeE7', 'name', 'placeId']
+										}
+									},
+									'name': {
+										'type': 'string'
+									},
+									'hexRgbColor': {
+										'type': 'string'
+									}
+								},
+								'required': ['hexRgbColor', 'name', 'transitStops']
+							}
+						},
+						'required': ['activities', 'activityType', 'confidence', 'distance', 'duration', 'endLocation', 'simplifiedRawPath', 'startLocation', 'transitPath', 'waypointPath']
+					},
+					'placeVisit': {
+						'type': 'object',
+						'properties': {
+							'location': {
+								'type': 'object',
+								'properties': {
+									'latitudeE7': {
+										'type': 'integer'
+									},
+									'longitudeE7': {
+										'type': 'integer'
+									},
+									'placeId': {
+										'type': 'string'
+									},
+									'address': {
+										'type': 'string'
+									},
+									'name': {
+										'type': 'string'
+									},
+									'sourceInfo': {
+										'type': 'object',
+										'properties': {
+											'deviceTag': {
+												'type': 'integer'
+											}
+										},
+										'required': ['deviceTag']
+									},
+									'locationConfidence': {
+										'type': 'number'
+									},
+									'semanticType': {
+										'type': 'string'
+									}
+								},
+								'required': ['address', 'latitudeE7', 'locationConfidence', 'longitudeE7', 'name', 'placeId', 'semanticType', 'sourceInfo']
+							},
+							'duration': {
+								'type': 'object',
+								'properties': {
+									'startTimestampMs': {
+										'type': 'string'
+									},
+									'endTimestampMs': {
+										'type': 'string'
+									}
+								},
+								'required': ['endTimestampMs', 'startTimestampMs']
+							},
+							'placeConfidence': {
+								'type': 'string'
+							},
+							'centerLatE7': {
+								'type': 'integer'
+							},
+							'centerLngE7': {
+								'type': 'integer'
+							},
+							'visitConfidence': {
+								'type': 'integer'
+							},
+							'otherCandidateLocations': {
+								'type': 'array',
+								'items': {
+									'type': 'object',
+									'properties': {
+										'latitudeE7': {
+											'type': 'integer'
+										},
+										'longitudeE7': {
+											'type': 'integer'
+										},
+										'placeId': {
+											'type': 'string'
+										},
+										'locationConfidence': {
+											'type': 'number'
+										},
+										'semanticType': {
+											'type': 'string'
+										}
+									},
+									'required': ['latitudeE7', 'locationConfidence', 'longitudeE7', 'placeId', 'semanticType']
+								}
+							},
+							'editConfirmationStatus': {
+								'type': 'string'
+							},
+							'childVisits': {
+								'type': 'array',
+								'items': {
+									'type': 'object',
+									'properties': {
+										'location': {
+											'type': 'object',
+											'properties': {
+												'latitudeE7': {
+													'type': 'integer'
+												},
+												'longitudeE7': {
+													'type': 'integer'
+												},
+												'placeId': {
+													'type': 'string'
+												},
+												'address': {
+													'type': 'string'
+												},
+												'name': {
+													'type': 'string'
+												},
+												'sourceInfo': {
+													'type': 'object',
+													'properties': {
+														'deviceTag': {
+															'type': 'integer'
+														}
+													},
+													'required': ['deviceTag']
+												},
+												'locationConfidence': {
+													'type': 'number'
+												}
+											},
+											'required': ['address', 'latitudeE7', 'locationConfidence', 'longitudeE7', 'name', 'placeId', 'sourceInfo']
+										},
+										'duration': {
+											'type': 'object',
+											'properties': {
+												'startTimestampMs': {
+													'type': 'string'
+												},
+												'endTimestampMs': {
+													'type': 'string'
+												}
+											},
+											'required': ['endTimestampMs', 'startTimestampMs']
+										},
+										'placeConfidence': {
+											'type': 'string'
+										},
+										'centerLatE7': {
+											'type': 'integer'
+										},
+										'centerLngE7': {
+											'type': 'integer'
+										},
+										'visitConfidence': {
+											'type': 'integer'
+										},
+										'otherCandidateLocations': {
+											'type': 'array',
+											'items': {
+												'type': 'object',
+												'properties': {
+													'latitudeE7': {
+														'type': 'integer'
+													},
+													'longitudeE7': {
+														'type': 'integer'
+													},
+													'placeId': {
+														'type': 'string'
+													},
+													'locationConfidence': {
+														'type': 'number'
+													}
+												},
+												'required': ['latitudeE7', 'locationConfidence', 'longitudeE7', 'placeId']
+											}
+										},
+										'editConfirmationStatus': {
+											'type': 'string'
+										}
+									},
+									'required': ['centerLatE7', 'centerLngE7', 'duration', 'editConfirmationStatus', 'location', 'otherCandidateLocations', 'placeConfidence', 'visitConfidence']
+								}
+							},
+							'simplifiedRawPath': {
+								'type': 'object',
+								'properties': {
+									'points': {
+										'type': 'array',
+										'items': {
+											'type': 'object',
+											'properties': {
+												'latE7': {
+													'type': 'integer'
+												},
+												'lngE7': {
+													'type': 'integer'
+												},
+												'timestampMs': {
+													'type': 'string'
+												},
+												'accuracyMeters': {
+													'type': 'integer'
+												}
+											},
+											'required': ['accuracyMeters', 'latE7', 'lngE7', 'timestampMs']
+										}
+									}
+								},
+								'required': ['points']
+							}
+						},
+						'required': ['centerLatE7', 'centerLngE7', 'childVisits', 'duration', 'editConfirmationStatus', 'location', 'otherCandidateLocations', 'placeConfidence', 'simplifiedRawPath', 'visitConfidence']
+					}
+				},
+				'required': ['activitySegment', 'placeVisit']
+			}
+		}
+	},
+	'required': ['timelineObjects']
 }
 
 GSLH_FAKER_SCHEMA = {
@@ -389,7 +393,8 @@ GSLH_FAKER_SCHEMA = {
 			},
 			'duration': {
 				'startTimestampMs': 'pystr',
-				'endTimestampMs': 'pystr'
+				'endTimestampMs': 'pystr',
+				'activityType': 'pystr'
 			},
 			'distance': 'pyint',
 			'activityType': 'pystr',
@@ -494,7 +499,7 @@ GSLH_FAKER_SCHEMA = {
 
 
 def test_get_json_schema():
-    json_file = "test/data/2020_JANUARY.json"
+    json_file = "test/data/2021_JANUARY.json"
     with open(json_file) as file_object:
         json_data = json.load(file_object)
         json_schema = get_json_schema(json_data)
