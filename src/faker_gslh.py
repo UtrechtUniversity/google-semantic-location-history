@@ -199,10 +199,6 @@ def fake_data(json_file):
             faked_data[(year, month)] = json_data
             fake_schema = get_json_schema(json_data)
 
-    # Check if schema is unchanged
-    if not json_schema == fake_schema:
-        print("Warning json schema of original file and faked file are not identical")
-
     return faked_data
 
 
