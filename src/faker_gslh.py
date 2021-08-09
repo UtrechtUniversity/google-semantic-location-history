@@ -180,7 +180,7 @@ def fake_data(json_file):
     faker = FakerSchema(faker=fake, locale='nl_NL')
 
     faked_data = {}
-    seed = 0
+    seed = 3
     for year in YEARS:
         for month in MONTHS:
             schema = get_faker_schema(
