@@ -10,6 +10,7 @@ genson = "^1.2.2"
 Faker = "^8.6.0"
 geopy = "^2.1.0"
 faker-schema = "^0.1.4"
+mock = "^4.0.3"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

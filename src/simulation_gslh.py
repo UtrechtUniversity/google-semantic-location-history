@@ -11,7 +11,7 @@ from faker.providers import geo
 from faker_schema.faker_schema import FakerSchema
 from geopy.distance import geodesic
 
-from get_faker_schema import get_json_schema, get_faker_schema
+from src.get_faker_schema import get_json_schema, get_faker_schema
 
 YEARS = [2019, 2020, 2021]
 MONTHS = [
