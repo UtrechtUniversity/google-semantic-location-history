@@ -2,9 +2,13 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
+dist/
 
 # Distribution / packaging
 .python-version
 
 # Unit test / coverage reports
 .coverage
+
+# data
+test/data/

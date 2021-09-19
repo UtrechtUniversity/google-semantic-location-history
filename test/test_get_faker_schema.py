@@ -1,6 +1,6 @@
 import json
 
-from src.get_faker_schema import get_json_schema, get_faker_schema
+from google_semantic_location_history.get_faker_schema import get_json_schema, get_faker_schema
 
 
 GSLH_JSON_SCHEMA = {
