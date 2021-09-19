@@ -13,7 +13,6 @@ from geopy.distance import geodesic
 
 from get_faker_schema import get_json_schema, get_faker_schema
 
-
 YEARS = [2019, 2020, 2021]
 MONTHS = [
     "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
@@ -52,7 +51,7 @@ SCHEMA_TYPES = {
 }
 
 
-def create_places(total=1):
+def _create_places(total=1, seed=None):
     """Create dictionary with visited places
     Args:
         total (int): number of places
@@ -60,6 +59,8 @@ def create_places(total=1):
         dict: dictionary with visited places with name, address and location
     """
     fake = Faker('nl_NL')
+    if seed is not None:
+        fake.seed_instance(seed)
     fake.add_provider(geo)
     places = {}
     latlon = fake.local_latlng(country_code="NL")
@@ -76,10 +77,11 @@ def create_places(total=1):
     return places
 
 
-def update_data(data, start_date, places, seed=None):
+def _update_data(data, start_date, places, seed=None):
     """ Update GSLH data with specified places, activities and durations
     Args:
         data (dict): data to update
+        start_date (datetime.datetime): start date of GSLH data
         places (dict): places to select from
         seed (int): Optionally seed Faker for reproducability
     Returns:
@@ -159,16 +161,17 @@ def write_zipfile(data, zipfile):
                 )
 
 
-def fake_data(json_file):
+def fake_data(json_file, seed=0):
     """Return faked json data
     Args:
         json_file: example json file with data to simulate
+        seed (int): Optionally seed Faker for reproducability
     Returns:
         dict: dict with summary and DataFrame with extracted data
     """
 
     # get dict of visited places
-    places = create_places(total=max(NPLACES.values()))
+    places = _create_places(total=max(NPLACES.values()))
 
     # Get json schema from json file
     with open(json_file) as file_object:
@@ -180,7 +183,6 @@ def fake_data(json_file):
     faker = FakerSchema(faker=fake, locale='nl_NL')
 
     faked_data = {}
-    seed = 3
     for year in YEARS:
         for month in MONTHS:
             schema = get_faker_schema(
@@ -191,7 +193,7 @@ def fake_data(json_file):
             data = faker.generate_fake(schema)
             month_number = datetime.strptime(month[:3], '%b').month
             seed += 1
-            json_data = update_data(
+            json_data = _update_data(
                 data, datetime(year, month_number, 1),
                 dict(itertools.islice(places.items(), NPLACES[year])),
                 seed=seed
@@ -202,5 +204,5 @@ def fake_data(json_file):
 
 
 if __name__ == '__main__':
-    location_data = fake_data("test/data/2021_JANUARY.json")
+    location_data = fake_data("test/data/2021_JANUARY.json", seed=3)
     write_zipfile(location_data, "Location History.zip")
