@@ -1,0 +1,10 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Distribution / packaging
+.python-version
+
+# Unit test / coverage reports
+.coverage
