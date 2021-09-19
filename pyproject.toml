@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fake-google-semantic-location-history"
+name = "google-semantic-location-history"
 version = "0.1.0"
 description = ""
 authors = ["Haili Hu <hailihu@gmail.com>"]
