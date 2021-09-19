@@ -17,6 +17,6 @@ The current version has been tested with Python 3.9.5. To run the unit tests:
 Note that the `poetry run` command executes the given command inside the project’s virtualenv.
 
 ## Run software
-`poetry run python src/faker_gslh.py`
+`poetry run python google_semantic_location_history/simulation_gslh.py`
 
 This creates a zipfile with the simulated Semantic Location History data in `Location History.zip`.

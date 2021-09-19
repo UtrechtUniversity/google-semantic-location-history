@@ -9,6 +9,3 @@ dist/
 
 # Unit test / coverage reports
 .coverage
-
-# data
-test/data/

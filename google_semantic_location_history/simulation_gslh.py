@@ -205,4 +205,4 @@ def fake_data(json_file, seed=0):
 
 if __name__ == '__main__':
     location_data = fake_data("test/data/2021_JANUARY.json", seed=3)
-    write_zipfile(location_data, "test/data/Location History.zip")
+    write_zipfile(location_data, "Location History.zip")
