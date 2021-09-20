@@ -174,7 +174,7 @@ def fake_data(json_file, seed=0):
     places = _create_places(total=max(NPLACES.values()))
 
     # Get json schema from json file
-    with open(json_file) as file_object:
+    with open(json_file, encoding='utf8') as file_object:
         json_data = json.load(file_object)
         json_schema = get_json_schema(json_data)
 
