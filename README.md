@@ -1,4 +1,4 @@
-# fake-google-semantic-location-history
+# Google Semantic Location History Faker
 
 Generate fake Google Semantic Location History (GSLH) data using the python libraries [GenSON](https://pypi.org/project/genson/), [Faker](https://github.com/joke2k/faker), and [faker-schema](https://pypi.org/project/faker-schema/).
 
