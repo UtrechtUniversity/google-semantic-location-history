@@ -1,6 +1,6 @@
 import json
 
-from src.get_faker_schema import get_json_schema, get_faker_schema
+from google_semantic_location_history.get_faker_schema import get_json_schema, get_faker_schema
 
 
 GSLH_JSON_SCHEMA = {
@@ -499,7 +499,7 @@ GSLH_FAKER_SCHEMA = {
 
 
 def test_get_json_schema():
-    json_file = "test/data/2021_JANUARY.json"
+    json_file = "tests/data/2021_JANUARY.json"
     with open(json_file) as file_object:
         json_data = json.load(file_object)
         json_schema = get_json_schema(json_data)

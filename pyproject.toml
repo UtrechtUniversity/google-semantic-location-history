@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fake-google-semantic-location-history"
+name = "google-semantic-location-history"
 version = "0.1.0"
 description = ""
 authors = ["Haili Hu <hailihu@gmail.com>"]
@@ -13,9 +13,11 @@ faker-schema = "^0.1.4"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
-pytest = "^6.2.4"
 pylint = "^2.9.3"
+pytest = "^6.2.4"
+mock = "^4.0.3"
 pytest-cov = "^2.12.1"
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
