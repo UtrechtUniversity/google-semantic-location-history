@@ -1,5 +1,16 @@
 # Google Semantic Location History Faker
 
+<!-- TABLE OF CONTENTS -->
+## Table of Contents
+- [About the Project](#about-the-project)
+- [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Installation](#installation)
+   - [Testing](#testing)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [Contact](#contact)
+
 ## About the Project
 Generate fake Google Semantic Location History (GSLH) data using the python libraries [GenSON](https://pypi.org/project/genson/), [Faker](https://github.com/joke2k/faker), and [faker-schema](https://pypi.org/project/faker-schema/).
 
@@ -7,13 +18,15 @@ First, we generate a JSON schema from a JSON object using `GenSON's SchemaBuilde
 
 ## Getting Started
 
+### Prerequisites
+This project makes use of Python 3.9.2 and [Poetry](https://python-poetry.org/) for managing dependencies. 
+
 ### Installation
-This project makes use of [Poetry](https://python-poetry.org/) for managing dependencies. You can simply install the dependencies with: 
+You can simply install the dependencies with 
+`poetry install` in the projects root folder.
 
-`poetry install`
-
-### Run tests
-The current version has been tested with Python 3.9.5. To run the unit tests:
+### Testing
+To run the unit tests:
 
 `poetry run pytest`
 
