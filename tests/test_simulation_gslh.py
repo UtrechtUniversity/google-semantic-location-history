@@ -205,7 +205,7 @@ def test_update_data_activity():
 @patch('google_semantic_location_history.simulation_gslh._create_places')
 def test_fake_data(created_places, updated_data):
     updated_data.return_value = {"test": "test_data"}
-    result = fake_data("test/data/2021_JANUARY.json")
+    result = fake_data("tests/data/2021_JANUARY.json")
     expected = {
         (2019, 'JANUARY'): {
             'test': 'test_data'

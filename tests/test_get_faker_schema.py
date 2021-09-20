@@ -499,7 +499,7 @@ GSLH_FAKER_SCHEMA = {
 
 
 def test_get_json_schema():
-    json_file = "test/data/2021_JANUARY.json"
+    json_file = "tests/data/2021_JANUARY.json"
     with open(json_file) as file_object:
         json_data = json.load(file_object)
         json_schema = get_json_schema(json_data)
